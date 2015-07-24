@@ -83,10 +83,15 @@ int half_gold_com = 0;
 bool reg_collection_finished = false;
 bool gold_collection_finished = false;
 
+bool de_one_third = false;
+
 int reg_collection_finished_packs = 0;
 int gold_collection_finished_packs = 0;
 
 int avg_reg_pack = 0;
+int min_reg_pack = 99999999;
+int max_reg_pack = 0;
+
 int avg_gold_pack = 0;
 
 bool reg_notification = false;
@@ -381,6 +386,8 @@ bool operate(char choice){
 			finish_multiple_collection_no_gold();
 			system("Cls");
 			cout << endl << "On average " << avg_reg_pack << " packs are needed to complete a regular collection" << endl;
+			cout <<  "Min packs required: " << min_reg_pack << endl;
+			cout <<  "Max packs required: " << max_reg_pack << endl;
 			break;
 		case '2':
 			finish_multiple_collection();
@@ -419,14 +426,18 @@ void create_collection(){
 
 	cout << endl;
 	cout << "Please enter your own collection or select one of the templates." << endl << endl;
-	cout << "1. Goblins and Gnomes V1 -- C: 47 - R: 40 - E: 19 - L: 17" << endl;
-	cout << "2. Goblins and Gnomes V2 -- C: 45 - R: 38 - E: 21 - L: 18" << endl;
-	cout << "3. Expert Set ------------- C: 94 - R: 81 - E: 37 - L: 33" << endl;
-	cout << "4. Enter your own collection" << endl << endl;
-	cout << "Enter your choice (1, 2, 3, 4): ";
+	cout << "1. Goblins and Gnomes V1 ------- C: 47 - R: 40 - E: 19 - L: 17" << endl;
+	cout << "2. Goblins and Gnomes V2 ------- C: 45 - R: 38 - E: 21 - L: 18" << endl;
+	cout << "3. Expert Set ------------------ C: 94 - R: 81 - E: 37 - L: 33" << endl;
+	cout << "4. The Grand Tournament -------- C: 50 - R: 40 - E: 22 - L: 20" << endl;
+	cout << "5. The Grand Tournament DE 2/3 - C: 50 - R: 40 - E: 22 - L: 20" << endl;
+	cout << "6. Enter your own collection" << endl << endl;
+	cout << "Enter your choice (1, 2, 3, 4, 5, 6): ";
 
 	cin >> choice1;
 	cin.ignore(1024, '\n');
+
+	de_one_third = false;
 
 	if (choice1 == '1'){
 		common_card_no = 47;
@@ -507,6 +518,59 @@ void create_collection(){
 		cout << endl << "Expert Set is selected." << endl;
 	}
 	if (choice1 == '4'){
+		common_card_no = 50;
+		rare_card_no = 40;
+		epic_card_no = 22;
+		legendary_card_no = 20;
+
+		common_collection.clear();
+		common_collection.resize(common_card_no);
+		rare_collection.clear();
+		rare_collection.resize(rare_card_no);
+		epic_collection.clear();
+		epic_collection.resize(epic_card_no);
+		legendary_collection.clear();
+		legendary_collection.resize(legendary_card_no);
+
+		gold_common_collection.clear();
+		gold_common_collection.resize(common_card_no);
+		gold_rare_collection.clear();
+		gold_rare_collection.resize(rare_card_no);
+		gold_epic_collection.clear();
+		gold_epic_collection.resize(epic_card_no);
+		gold_legendary_collection.clear();
+		gold_legendary_collection.resize(legendary_card_no);
+
+		cout << endl << "Grand Tournament Set is selected." << endl;
+	}
+	if (choice1 == '5'){
+		common_card_no = 50;
+		rare_card_no = 40;
+		epic_card_no = 22;
+		legendary_card_no = 20;
+		de_one_third = true;
+
+		common_collection.clear();
+		common_collection.resize(common_card_no);
+		rare_collection.clear();
+		rare_collection.resize(rare_card_no);
+		epic_collection.clear();
+		epic_collection.resize(epic_card_no);
+		legendary_collection.clear();
+		legendary_collection.resize(legendary_card_no);
+
+		gold_common_collection.clear();
+		gold_common_collection.resize(common_card_no);
+		gold_rare_collection.clear();
+		gold_rare_collection.resize(rare_card_no);
+		gold_epic_collection.clear();
+		gold_epic_collection.resize(epic_card_no);
+		gold_legendary_collection.clear();
+		gold_legendary_collection.resize(legendary_card_no);
+
+		cout << endl << "Grand Tournament Set is selected." << endl;
+	}
+	if (choice1 == '6'){
 		cout << endl ;
 		cout << "Please only enter numbers." << endl << endl;
 		cout << "Enter common cards in the set: ";
@@ -538,7 +602,7 @@ void create_collection(){
 
 		cout << endl << "C: " << common_card_no << " - R: " << rare_card_no << " - E: " << epic_card_no << " - L: " << legendary_card_no << endl;
 	}
-	if (choice1 != '1' && choice1 != '2' && choice1 != '3' && choice1 != '4'){
+	if (choice1 != '1' && choice1 != '2' && choice1 != '3' && choice1 != '4' && choice1 != '5' && choice1 != '6'){
 		common_card_no = 94;
 		rare_card_no = 81;
 		epic_card_no = 37;
@@ -591,6 +655,56 @@ void convert_percentage(){
 	gold_legendary_chance = gold_legendary_percentage * 1000;
 }
 
+void open_de_pack(){
+
+	int cardtype, card;
+	int seed;
+	seed = rand() % 32000;
+	typedef std::chrono::high_resolution_clock Clock;
+	typedef std::chrono::duration<double> sec;
+	Clock::time_point t0 = Clock::now();
+	typedef std::minstd_rand G;
+	G g(seed);
+	typedef std::uniform_int_distribution<> D;
+
+	for (int i = 0; i < 5; i++){
+
+		if (inpack_common == 4){
+			D d(common_chance+1, 100000);
+			cardtype = d(g); //common_chance+1 to 100000
+		}
+		else{
+			D d(1, 100000);
+			cardtype = d(g);
+		}
+		if (cardtype <= common_chance){
+			dust+=5;
+		}
+		else if (cardtype <= common_chance + rare_chance){
+			dust+=20;
+		}
+		else if (cardtype <= common_chance + rare_chance + epic_chance){
+			dust+=100;
+		}
+		else if (cardtype <= common_chance + rare_chance + epic_chance + legendary_chance){
+			dust+=400;
+		}
+		else if (cardtype <= common_chance + rare_chance + epic_chance + legendary_chance + gold_common_chance){
+			dust+=50;
+		}
+		else if (cardtype <= common_chance + rare_chance + epic_chance + legendary_chance + gold_common_chance + gold_rare_chance){
+			dust+=100;
+		}
+		else if (cardtype <= common_chance + rare_chance + epic_chance + legendary_chance + gold_common_chance + gold_rare_chance + gold_epic_chance){
+			dust+=400;
+		}
+		else if (cardtype <= common_chance + rare_chance + epic_chance + legendary_chance + gold_common_chance + gold_rare_chance + gold_epic_chance + gold_legendary_chance){
+			dust+=1600;
+		}
+	}
+	packs_opened++;
+}
+
 void open_pack(){
 	inpack_common = 0;
 	inpack_rare = 0;
@@ -610,6 +724,12 @@ void open_pack(){
 	typedef std::minstd_rand G;
 	G g(seed);
 	typedef std::uniform_int_distribution<> D;
+
+	D d(0,2);
+	if (de_one_third && d(g) == 0) {
+		open_de_pack();
+		return;
+	}
 
 	for (int i = 0; i < 5; i++){
 
@@ -1282,6 +1402,8 @@ void finish_multiple_collection_no_gold(){
 
 	this_reg_pack = reg_collection_finished_packs;
 	avg_reg_pack = this_reg_pack;
+	min_reg_pack = this_reg_pack;
+	max_reg_pack = this_reg_pack;
 
 	reset_program();
 
@@ -1290,7 +1412,14 @@ void finish_multiple_collection_no_gold(){
 		finish_collection_no_gold();
 
 		this_reg_pack = reg_collection_finished_packs;
+		if (this_reg_pack > max_reg_pack) {
+			max_reg_pack = this_reg_pack;
+		}
+		if (this_reg_pack < min_reg_pack) {
+			min_reg_pack = this_reg_pack;
+		}
 		avg_reg_pack = ((avg_reg_pack * i) + this_reg_pack) / (i + 1);
+		reset_program();
 	}
 }
 
