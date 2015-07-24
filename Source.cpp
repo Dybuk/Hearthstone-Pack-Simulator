@@ -427,7 +427,7 @@ void create_collection(){
 	cout << endl;
 	cout << "Please enter your own collection or select one of the templates." << endl << endl;
 	cout << "1. Goblins and Gnomes V1 ------- C: 47 - R: 40 - E: 19 - L: 17" << endl;
-	cout << "2. Goblins and Gnomes V2 ------- C: 45 - R: 38 - E: 21 - L: 18" << endl;
+	cout << "2. Goblins and Gnomes V2 ------- C: 40 - R: 37 - E: 26 - L: 20" << endl;
 	cout << "3. Expert Set ------------------ C: 94 - R: 81 - E: 37 - L: 33" << endl;
 	cout << "4. The Grand Tournament -------- C: 50 - R: 40 - E: 22 - L: 20" << endl;
 	cout << "5. The Grand Tournament DE 2/3 - C: 50 - R: 40 - E: 22 - L: 20" << endl;
@@ -466,10 +466,10 @@ void create_collection(){
 		cout << endl << "Goblins and Gnomes V1 is selected." << endl;
 	}
 	if (choice1 == '2'){
-		common_card_no = 45;
-		rare_card_no = 38;
-		epic_card_no = 21;
-		legendary_card_no = 18;
+		common_card_no = 40;
+		rare_card_no = 37;
+		epic_card_no = 26;
+		legendary_card_no = 20;
 
 		common_collection.clear();
 		common_collection.resize(common_card_no);
@@ -1098,6 +1098,26 @@ void craft_regular_collection(){
 	}
 }
 
+int calculate_dust_required_for_completion()
+{
+    int dust_required=0;
+	for (int i = 0; i < legendary_card_no; i++){
+		if (legendary_collection[i] < 1) {
+			dust_required += 1600;
+		}
+	}
+	for (int i = 0; i < epic_card_no; i++){
+		dust_required += 400*(2-(epic_collection[i]>2?2:epic_collection[i]));
+	}
+	for (int i = 0; i < rare_card_no; i++){
+		dust_required += 100*(2-(rare_collection[i]>2?2:rare_collection[i]));
+	}
+	for (int i = 0; i < common_card_no; i++){
+		dust_required += 40*(2-(common_collection[i]>2?2:common_collection[i]));
+	}
+	return dust_required;
+}
+
 void craft_regular_collection_use_all_dust(){
 	legendaries_crafted = 0;
 	epics_crafted = 0;
@@ -1298,6 +1318,7 @@ void show_progress(){
 	cout << "         Epics: " << setw(3) << half_epic << " / " << setw(3) << comp_epic << " / " << setw(3) << epic_card_no << endl;
 	cout << "         Rares: " << setw(3) << half_rare << " / " << setw(3) << comp_rare << " / " << setw(3) << rare_card_no << endl;
 	cout << "       Commons: " << setw(3) << half_com << " / " << setw(3) << comp_com << " / " << setw(3) << common_card_no << endl;
+	cout << " Dust required: " << calculate_dust_required_for_completion() << endl;
 
 	cout << "G. Legendaries:   - / " << setw(3) << comp_gold_leg << " / " << setw(3) << legendary_card_no << endl;
 	cout << "      G. Epics: " << setw(3) << half_gold_epic << " / " << setw(3) << comp_gold_epic << " / " << setw(3) << epic_card_no << endl;
@@ -1320,7 +1341,9 @@ void finish_collection(){
 	while (reg_collection_finished == false){
 		open_pack();
 		disenchant_extras();
-		craft_regular_collection();
+		if (calculate_dust_required_for_completion() < dust) {
+			craft_regular_collection();
+		}
 		calculate_progress();
 		check_completion();
 	}
@@ -1343,7 +1366,9 @@ void finish_collection_no_gold(){
 		open_pack();
 		disenchant_extras();
 		disenchant_gold_cards();
-		craft_regular_collection();
+		if (calculate_dust_required_for_completion() < dust) {
+			craft_regular_collection_use_all_dust();
+		}
 		calculate_progress();
 		check_completion();
 	}
@@ -1407,6 +1432,8 @@ void finish_multiple_collection_no_gold(){
 
 	reset_program();
 
+	int total_packs=this_reg_pack;
+
 	for (int i = 1; i < sim_no; i++){
 		reg_collection_finished_packs = 0;
 		finish_collection_no_gold();
@@ -1418,9 +1445,10 @@ void finish_multiple_collection_no_gold(){
 		if (this_reg_pack < min_reg_pack) {
 			min_reg_pack = this_reg_pack;
 		}
-		avg_reg_pack = ((avg_reg_pack * i) + this_reg_pack) / (i + 1);
+		total_packs+=this_reg_pack;
 		reset_program();
 	}
+	avg_reg_pack = total_packs/sim_no;
 }
 
 void reset_program(){
